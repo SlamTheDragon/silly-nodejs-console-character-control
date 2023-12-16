@@ -1,0 +1,24 @@
+{
+  "name": "uhhh-random-stuff-or-smth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "bin": "./dist/index.js",
+  "scripts": {
+    "start": "pnpm build && pnpm node",
+    "node": "cd dist && node index.js",
+    "build": "rm -rf dist && tsc",
+    "start:l": "pnpm node",
+    "package": "pnpm build && pkg -t win ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "@types/prompt-sync": "^4.2.3"
+  },
+  "dependencies": {
+    "prompt-sync": "^4.2.0"
+  }
+}
