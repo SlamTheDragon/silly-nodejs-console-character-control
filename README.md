@@ -1,4 +1,4 @@
-# Console Character Navigation Thingy
+# The Console Experiment
  A random nodejs project written in typescript out of boredom
 ![showcase](the-gif-in-question.gif)
 
