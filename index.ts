@@ -58,13 +58,13 @@ class Screen {
 
     public static Main() {
         Console.ClearScreen()
-        const a = Console.ReadLine("Welcome to this random project made with boredom. Press enter to continue.")
+        const empty = Console.ReadLine("Welcome to this random project made with boredom. Press enter to continue.")
         Console.ClearScreen()
         this.Setup()
 
         // Start
-        Screen.Render()
-        Screen.ConsolePixelEngine()
+        Screen.RenderEngine()
+        Screen.RenderEngineRouter()
     }
 
     public static Setup() {
@@ -93,7 +93,7 @@ class Screen {
                 this.BuildScreenData()
 
                 return
-            } catch (e) {
+            } catch (error) {
                 Screen.isInputError = true
                 Console.ClearScreen()
             }
@@ -158,7 +158,7 @@ class Screen {
         Screen.isInitialCharacter = true;
     }
 
-    public static Render(input?: string, renderSelection?: number) {
+    public static RenderEngine(input?: string, renderSelection?: number) {
         // measure FPS Speed
         const startTime = performance.now()
 
@@ -331,7 +331,7 @@ class Screen {
     }
 
     // This is in fact, not the engine itself
-    public static ConsolePixelEngine() {
+    public static RenderEngineRouter() {
         let exportedKeyName: any
         let exportedKeys: any
 
@@ -416,7 +416,7 @@ class Screen {
             }
 
             // updates terminal with the specified key and rendering selection
-            Screen.Render(exportedKeyName, this._rendererSelection)
+            Screen.RenderEngine(exportedKeyName, this._rendererSelection)
             if (this._isShowingDebug) {
                 Console.WriteLine(exportedKeys)
             }
@@ -429,7 +429,7 @@ class Screen {
     private static startClock(keyName: any) {
         if (this._isClockEnabled) {
             setTimeout(() => {
-                Screen.Render(keyName, this._rendererSelection);
+                Screen.RenderEngine(keyName, this._rendererSelection);
                 this.startClock(keyName)
             }, this._targetFPS)
         }
@@ -726,6 +726,10 @@ class RenderLine {
     }
 }
 
+class RenderCube {
+    // uuhhhhhh this is kinda hord lol
+}
+
 class Explosion {
     public static isBaseplateBuilt: boolean = false
     private static _pointPlotterX: number[] = []
@@ -733,8 +737,6 @@ class Explosion {
 
     private static _newPlotterX: number[] = []
     private static _newPlotterY: number[] = []
-    private static _newPlotterCopyX: number[] = []
-    private static _newPlotterCopyY: number[] = []
 
     private static _resetCounter: number = 0
 
@@ -742,9 +744,7 @@ class Explosion {
 
         if (this.isBaseplateBuilt) {
             this._newPlotterX = this._pointPlotterX
-            this._newPlotterCopyX = this._pointPlotterX
             this._newPlotterY = this._pointPlotterY
-            this._newPlotterCopyY = this._pointPlotterY
             this._pointPlotterX = []
             this._pointPlotterY = []
 
@@ -766,8 +766,6 @@ class Explosion {
         if (!this.isBaseplateBuilt) {
             this._newPlotterX = []
             this._newPlotterY = []
-            this._newPlotterCopyX = []
-            this._newPlotterCopyY = []
             this._pointPlotterX = []
             this._pointPlotterY = []
             Screen.BuildScreenDataIndependentlty()
@@ -788,8 +786,8 @@ class Explosion {
             for (let i = 0; i < this._pointPlotterX.length; i++) {
                 const obj: DimensionalArrayInterface[] = Screen.a2dArray
 
-                if (this._pointPlotterX[i] > Screen.width || this._pointPlotterX[i] < 0) return
-                if (this._pointPlotterY[i] > Screen.height || this._pointPlotterY[i] < 0) return
+                // if (this._pointPlotterX[i] >= Screen.width - 1 || this._pointPlotterX[i] <= 0) return
+                // if (this._pointPlotterY[i] >= Screen.height - 1 || this._pointPlotterY[i] <= 0) return
                 obj[this._pointPlotterY[i]].data[this._pointPlotterX[i]] = Screen.pixelOn
             }
         } catch (error) {
@@ -807,57 +805,33 @@ class Explosion {
         // move left
         let left = x - 1
 
-        if (top > Screen.height) top = top - 1
-        if (right > Screen.width) right = right - 1
-        if (down < 0) down = down + 1
-        if (left < 0) left = left + 1
+        if (top > Screen.height - 1) top = top - 1
+        if (right > Screen.width - 1) right = right - 1
+        if (down < -1) down = down + 1
+        if (left < -1) left = left + 1
 
-        if (top > 0 && top < Screen.height) {
+        this.EvaluateExpansion(top, x, Screen.height, this._newPlotterY, false)
+        this.EvaluateExpansion(right, y, Screen.width, this._newPlotterX, true)
+        this.EvaluateExpansion(down, x, Screen.height, this._newPlotterY, false)
+        this.EvaluateExpansion(left, y, Screen.width, this._newPlotterX, true)
+    }
+
+    private static EvaluateExpansion(directionA: number, directionB: number, screenLength: number, axisArray: number[], invert: boolean) {
+        if (directionA >= 0 && directionA <= screenLength) {
             let isFound = false
-            for (const i of this._newPlotterCopyY) {
-                if (i === top) {
+            for (const i of axisArray) {
+                if (i === directionA) {
                     isFound = true
                 }
             }
             if (!isFound) {
-                this._pointPlotterX.push(x)
-                this._pointPlotterY.push(top)
-            }
-        }
-        if (right > 0 && right < Screen.width) {
-            let isFound = false
-            for (const i of this._newPlotterCopyX) {
-                if (i === right) {
-                    isFound = true
+                if (invert) {
+                    this._pointPlotterX.push(directionA)
+                    this._pointPlotterY.push(directionB)
+                    return
                 }
-            }
-            if (!isFound) {
-                this._pointPlotterX.push(right)
-                this._pointPlotterY.push(y)
-            }
-        }
-        if (down > 0 && down < Screen.height) {
-            let isFound = false
-            for (const i of this._newPlotterCopyY) {
-                if (i === down) {
-                    isFound = true
-                }
-            }
-            if (!isFound) {
-                this._pointPlotterX.push(x)
-                this._pointPlotterY.push(down)
-            }
-        }
-        if (left > 0 && left < Screen.width) {
-            let isFound = false
-            for (const i of this._newPlotterCopyX) {
-                if (i === left) {
-                    isFound = true
-                }
-            }
-            if (!isFound) {
-                this._pointPlotterX.push(left)
-                this._pointPlotterY.push(y)
+                this._pointPlotterX.push(directionB)
+                this._pointPlotterY.push(directionA)
             }
         }
     }
